@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Firebase Chat App</string>
+    <string name="google_signIn_client_id">553367817098-o84kd2aq9unhg19fbij1nj5dqo68qbku.apps.googleusercontent.com</string>
 </resources>

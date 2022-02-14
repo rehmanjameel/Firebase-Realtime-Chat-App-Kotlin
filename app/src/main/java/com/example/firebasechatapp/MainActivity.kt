@@ -1,15 +1,22 @@
 package com.example.firebasechatapp
 
 import android.content.Context
+import android.content.Intent
 import android.content.SharedPreferences
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.Menu
+import android.view.MenuItem
 import androidx.recyclerview.widget.LinearLayoutManager
 import android.widget.Toast
 import com.example.firebasechatapp.adapters.ChatAdapter
 import com.example.firebasechatapp.models.Message
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInClient
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.FirebaseApp
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import kotlinx.android.synthetic.main.activity_main.*
 import java.util.prefs.AbstractPreferences
@@ -17,7 +24,10 @@ import kotlin.collections.ArrayList
 
 class MainActivity : AppCompatActivity() {
 
-
+    lateinit var mGoogleSignInClient: GoogleSignInClient
+    private val auth by lazy {
+        FirebaseAuth.getInstance()
+    }
     var databaseReference: DatabaseReference? = null
     //private lateinit var personName: String
     private val myName = "Name"
@@ -31,6 +41,11 @@ class MainActivity : AppCompatActivity() {
         //personName = intent.getStringExtra("Name").toString()
         //println("UserName: $personName")
 
+        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestIdToken(getString(R.string.google_signIn_client_id))
+            .requestEmail()
+            .build()
+        mGoogleSignInClient = GoogleSignIn.getClient(this, gso)
 
         initFirebase()
 
@@ -40,6 +55,24 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        menuInflater.inflate(R.menu.logout, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        val id = item.itemId
+
+        if (id == R.id.logoutId) {
+            mGoogleSignInClient.signOut().addOnCompleteListener {
+                val intent= Intent(this, NameActivity::class.java)
+                startActivity(intent)
+                finish()
+            }
+        }
+        return super.onOptionsItemSelected(item)
+    }
     //* Setting up the Firebase **//
     //***
     private fun initFirebase() {
