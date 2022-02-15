@@ -1,6 +1,6 @@
-package com.example.firebasechatapp
+package com.example.firebasechatapp.activities
 
-import android.content.Context
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.SharedPreferences
 import androidx.appcompat.app.AppCompatActivity
@@ -10,6 +10,9 @@ import android.view.Menu
 import android.view.MenuItem
 import androidx.recyclerview.widget.LinearLayoutManager
 import android.widget.Toast
+import com.example.firebasechatapp.AppGlobals
+import com.example.firebasechatapp.DownloadImageInternal
+import com.example.firebasechatapp.R
 import com.example.firebasechatapp.adapters.ChatAdapter
 import com.example.firebasechatapp.models.Message
 import com.google.android.gms.auth.api.signin.GoogleSignIn
@@ -19,8 +22,9 @@ import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import kotlinx.android.synthetic.main.activity_main.*
-import java.util.prefs.AbstractPreferences
 import kotlin.collections.ArrayList
+
+@SuppressLint("RestrictedApi")
 
 class MainActivity : AppCompatActivity() {
 
@@ -28,6 +32,8 @@ class MainActivity : AppCompatActivity() {
     private val auth by lazy {
         FirebaseAuth.getInstance()
     }
+    val user = auth.currentUser
+    private val appGlobals = AppGlobals()
     var databaseReference: DatabaseReference? = null
     //private lateinit var personName: String
     private val myName = "Name"
@@ -47,13 +53,13 @@ class MainActivity : AppCompatActivity() {
             .build()
         mGoogleSignInClient = GoogleSignIn.getClient(this, gso)
 
-        val user = auth.currentUser
         user?.let {
             // Name, email address, and profile photo Url
             val name = user.displayName
             val email = user.email
             val photoUrl = user.photoUrl
 
+            appGlobals.saveString("ImageUrl", photoUrl.toString())
             // Check if user's email is verified
             val emailVerified = user.isEmailVerified
 
@@ -62,7 +68,15 @@ class MainActivity : AppCompatActivity() {
             // authenticate with your backend server, if you have one. Use
             // FirebaseUser.getToken() instead.
             val uid = user.uid
+            DownloadImageInternal(this).execute(photoUrl.toString())
+//            var file = File(it.filesDir, "Images")
+//            if (!file.exists()) {
+//                file.mkdir()
+//            }
+//            file = File(file, "img.jpg")
         }
+
+
         initFirebase()
 
         setUpSendButton()
@@ -86,6 +100,12 @@ class MainActivity : AppCompatActivity() {
                 startActivity(intent)
                 finish()
             }
+        } else if (id == R.id.removeValuesId) {
+            val paths = databaseReference?.path
+
+            Log.e("paths", "$paths")
+            databaseReference?.child("$paths")?.removeValue()
+            Log.e("paths", "Removed")
         }
         return super.onOptionsItemSelected(item)
     }
@@ -113,6 +133,7 @@ class MainActivity : AppCompatActivity() {
                     val messageData = data.getValue(Message::class.java)
                     //unwrap
                     val message = messageData ?: continue
+                    Log.e("message", "$message")
                     toReturn.add(message)
                 }
                 //sort to newest at bottom
@@ -159,14 +180,14 @@ class MainActivity : AppCompatActivity() {
     //***
     private fun sendData() {
         //Getting name using the SharedPreferences
-        sharedPreferences = getSharedPreferences("nameKey", Context.MODE_PRIVATE)
-        val getName = sharedPreferences.getString(myName, "")
-        Log.d("UserName: ", getName.toString())
+//        sharedPreferences = getSharedPreferences("nameKey", Context.MODE_PRIVATE)
+//        val getName = sharedPreferences.getString(myName, "")
+//        Log.d("UserName: ", getName.toString())
 
         databaseReference?.
         child("messages")?.
         child(java.lang.String.valueOf(System.currentTimeMillis()))?.
-        setValue(Message(mainEditTextId.text.toString(), getName.toString()))
+        setValue(Message(mainEditTextId.text.toString(), user?.displayName.toString(), user?.photoUrl.toString()))
         mainEditTextId.setText("")
     }
 }

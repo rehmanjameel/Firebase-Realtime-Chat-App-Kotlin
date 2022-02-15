@@ -1,17 +1,22 @@
-package com.example.firebasechatapp
+package com.example.firebasechatapp.activities
 
 import android.annotation.SuppressLint
 import android.app.Activity
-import android.content.ContentProviderClient
 import android.content.ContentValues.TAG
 import android.content.Intent
 import android.content.SharedPreferences
+import android.content.pm.PackageManager
+import android.net.Uri
+import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.os.Message
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.PermissionChecker
+import com.bumptech.glide.Glide
+import com.example.firebasechatapp.R
+import com.example.firebasechatapp.SavedPreference
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
@@ -19,11 +24,11 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.GoogleAuthCredential
 import com.google.firebase.auth.GoogleAuthProvider
-import com.google.firebase.database.DatabaseReference
 import kotlinx.android.synthetic.main.activity_name.*
-import java.lang.Exception
+import java.util.jar.Manifest
+
+@SuppressLint("WrongConstant")
 
 class NameActivity : AppCompatActivity() {
 
@@ -32,8 +37,10 @@ class NameActivity : AppCompatActivity() {
     lateinit var sharedPreferences: SharedPreferences
     lateinit var sharedPreferencesEditor: SharedPreferences.Editor
     lateinit var mGoogleSignInClient: GoogleSignInClient
-    val reqCode = 123
+//    val reqCode = 123
     var firebaseAuth = FirebaseAuth.getInstance()
+
+    var imageUri: Uri? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -55,8 +62,56 @@ class NameActivity : AppCompatActivity() {
         // initialize the firebaseAuth variable
         firebaseAuth = FirebaseAuth.getInstance()
 
+        //Image Click listener
+        userImageId.setOnClickListener {
+            Log.d("Image view", "Clicked")
+            pickImage()
+        }
+
         signInId.setOnClickListener {
             signInGoogle()
+        }
+    }
+
+    var imagePickerLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {imagePickerResult ->
+        if (imagePickerResult.resultCode == Activity.RESULT_OK) {
+            val intent= imagePickerResult.data
+
+            if (intent != null) {
+                imageUri = intent.data!!
+
+                Glide.with(applicationContext)
+                    .load(imageUri)
+                    .error(R.drawable.ic_baseline_person_pin_24)
+                    .into(userImageId)
+            } else {
+                Log.e("Error", "Image not set")
+            }
+        }
+    }
+
+    private fun pickImage() {
+        Log.e("pick", "Image not set")
+
+        //Check Permission
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (PermissionChecker.checkSelfPermission(
+                    applicationContext,
+                    android.Manifest.permission.READ_EXTERNAL_STORAGE
+                ) == PackageManager.PERMISSION_DENIED) {
+                Log.e("if", "Image not set")
+
+                val permission = arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE)
+                requestPermissions(permission, 1001)
+            } else {
+                val  intent = Intent(Intent.ACTION_PICK)
+                intent.type = "image/*"
+                imagePickerLauncher.launch(intent)
+            }
+        } else {
+            val intent = Intent(Intent.ACTION_PICK)
+            intent.type = "image/*"
+            imagePickerLauncher.launch(intent)
         }
     }
 

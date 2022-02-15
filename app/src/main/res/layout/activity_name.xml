@@ -4,14 +4,14 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".NameActivity"
+    tools:context=".activities.NameActivity"
     android:gravity="center">
 
     <View
         android:id="@+id/viewId"
         android:layout_width="match_parent"
         android:layout_height="450dp"
-        android:background="#ffc266"/>
+        android:background="#ffc266" />
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"

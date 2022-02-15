@@ -8,10 +8,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
+import com.example.firebasechatapp.AppGlobals
 import com.example.firebasechatapp.R
+import com.example.firebasechatapp.SavedPreference
 import com.example.firebasechatapp.models.Message
-import kotlinx.android.synthetic.main.left_message_view.view.*
 import kotlinx.android.synthetic.main.recycler_text_layout.view.*
+import kotlinx.android.synthetic.main.right_message_view.view.*
 import java.lang.IllegalArgumentException
 
 class ChatAdapter(val context: Context, val message: ArrayList<Message>, val itemClick: (Message) -> Unit) :
@@ -19,8 +22,9 @@ class ChatAdapter(val context: Context, val message: ArrayList<Message>, val ite
 
     //private var databaseReference: DatabaseReference = FirebaseDatabase.getInstance().reference.child("messages")
 
-    private val LEFT_MESSAGE_VIEW = 0
-    private val RIGHT_MESSAGE_VIEW = 1
+    private val mContext = context
+    private val RIGHT_MESSAGE_VIEW = 0
+    private val LEFT_MESSAGE_VIEW = 1
 
     private val myName = "Name"
     private val sharedPreferences: SharedPreferences = context.getSharedPreferences("nameKey", Context.MODE_PRIVATE)
@@ -36,12 +40,12 @@ class ChatAdapter(val context: Context, val message: ArrayList<Message>, val ite
 
         // inflating the message-textview-layout
 
-        if (viewType == RIGHT_MESSAGE_VIEW){
+        if (viewType == LEFT_MESSAGE_VIEW){
             val view = LayoutInflater.from(parent.context).inflate(R.layout.recycler_text_layout, parent, false)
             Log.d("DebuggingLeft: ", message.toString())
             return ViewHolder(view, itemClick)
-        }else if (viewType == LEFT_MESSAGE_VIEW) {
-            val view = LayoutInflater.from(parent.context).inflate(R.layout.left_message_view, parent, false)
+        }else if (viewType == RIGHT_MESSAGE_VIEW) {
+            val view = LayoutInflater.from(parent.context).inflate(R.layout.right_message_view, parent, false)
             Log.d("DebuggingRight: ", message.toString())
             return ViewHolder(view, itemClick)
         } else {
@@ -59,6 +63,7 @@ class ChatAdapter(val context: Context, val message: ArrayList<Message>, val ite
 
     class ViewHolder(view: View, val itemClick: (Message) -> Unit) : RecyclerView.ViewHolder(view) {
 
+        private val appGlobals = AppGlobals()
         fun bindForeCast(message: Message, holder: ViewHolder) {
             with(message) {
             if (itemViewType == 0){
@@ -66,28 +71,39 @@ class ChatAdapter(val context: Context, val message: ArrayList<Message>, val ite
                 Log.d("MsgEditView1: ", "${itemView.rightNameMessageTextView.text }")
                 holder.itemView.rightNameTextView.text = message.name
                 Log.d("NameEditView1: ", "${itemView.rightNameTextView.text}")
+                val image = message.image
+                val imageUrl = appGlobals.getValueString("ImageUrl")
+                Glide.with(itemView)
+                    .load(image)
+                    .error(R.drawable.ic_baseline_person_pin_24)
+                    .into(holder.itemView.rightUserImageId)
             } else if (itemViewType == 1){
 
-                holder.itemView.messageTextView.text = message.text
-                Log.d("MsgEditView: ", "${itemView.messageTextView.text}")
+                holder.itemView.leftMessageTextView.text = message.text
+                Log.d("MsgEditView: ", "${itemView.leftMessageTextView.text}")
                 holder.itemView.nameTextViewLeft.text = message.name
                 Log.d("NameEditView: ", "${itemView.nameTextViewLeft.text}")
+                val image = message.image
+                Glide.with(itemView)
+                    .load(image)
+                    .error(R.drawable.ic_baseline_person_pin_24)
+                    .into(holder.itemView.leftUserImageId)
             }
-
                 itemView.setOnClickListener { itemClick(this) }
             }
         }
     }
 
     override fun getItemViewType(position: Int): Int {
-        val getName = sharedPreferences.getString(myName, "")
+//        val getName = sharedPreferences.getString(myName, "")
+        val getName = SavedPreference.getUsername(context)
         Log.d("UserName: ", getName.toString())
         println("DebuggingName: " + message[position].name.toString())
 
         return if (message[position].name == getName.toString()) {
-            LEFT_MESSAGE_VIEW
-        }else {
             RIGHT_MESSAGE_VIEW
+        }else {
+            LEFT_MESSAGE_VIEW
         }
     }
 
