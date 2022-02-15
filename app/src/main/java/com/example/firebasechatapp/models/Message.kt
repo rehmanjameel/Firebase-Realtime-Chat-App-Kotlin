@@ -1,7 +1,7 @@
 package com.example.firebasechatapp.models
 
 class Message {
-
+    var uid: String? = null
     var text: String? = null
     var name: String? = null
     var image: String? = null
@@ -11,7 +11,8 @@ class Message {
     var timeStamp: Long = System.currentTimeMillis()
     constructor()  //empty for firebase
 
-    constructor(messageText: String, nameText: String, imageUrl: String) {
+    constructor(uUid: String, messageText: String, nameText: String, imageUrl: String) {
+        uid = uUid
         text = messageText
         name = nameText
         image = imageUrl

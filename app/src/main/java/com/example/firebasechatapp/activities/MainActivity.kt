@@ -20,7 +20,9 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.ktx.auth
 import com.google.firebase.database.*
+import com.google.firebase.ktx.Firebase
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlin.collections.ArrayList
 
@@ -68,7 +70,7 @@ class MainActivity : AppCompatActivity() {
             // authenticate with your backend server, if you have one. Use
             // FirebaseUser.getToken() instead.
             val uid = user.uid
-            DownloadImageInternal(this).execute(photoUrl.toString())
+//            DownloadImageInternal(this).execute(photoUrl.toString())
 //            var file = File(it.filesDir, "Images")
 //            if (!file.exists()) {
 //                file.mkdir()
@@ -95,11 +97,12 @@ class MainActivity : AppCompatActivity() {
         val id = item.itemId
 
         if (id == R.id.logoutId) {
-            mGoogleSignInClient.signOut().addOnCompleteListener {
+            Firebase.auth.signOut()
+//            mGoogleSignInClient.signOut().addOnCompleteListener {
                 val intent= Intent(this, NameActivity::class.java)
                 startActivity(intent)
                 finish()
-            }
+//            }
         } else if (id == R.id.removeValuesId) {
             val paths = databaseReference?.path
 
@@ -184,10 +187,16 @@ class MainActivity : AppCompatActivity() {
 //        val getName = sharedPreferences.getString(myName, "")
 //        Log.d("UserName: ", getName.toString())
 
+        val uid = appGlobals.getValueString("UID") ?: ""
+        val userName = appGlobals.getValueString("userName")
+        val profileImageUrl = appGlobals.getValueString("ProfileImageUrl")
+        Log.d("UserName", userName.toString())
+
         databaseReference?.
         child("messages")?.
         child(java.lang.String.valueOf(System.currentTimeMillis()))?.
-        setValue(Message(mainEditTextId.text.toString(), user?.displayName.toString(), user?.photoUrl.toString()))
+        setValue(Message(uid, mainEditTextId.text.toString(), userName.toString(), profileImageUrl.toString()))
+//        setValue(Message(mainEditTextId.text.toString(), user?.displayName.toString(), user?.photoUrl.toString()))
         mainEditTextId.setText("")
     }
 }

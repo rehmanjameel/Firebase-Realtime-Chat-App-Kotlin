@@ -95,8 +95,10 @@ class ChatAdapter(val context: Context, val message: ArrayList<Message>, val ite
     }
 
     override fun getItemViewType(position: Int): Int {
+        val appGlobals = AppGlobals()
 //        val getName = sharedPreferences.getString(myName, "")
-        val getName = SavedPreference.getUsername(context)
+//        val getName = SavedPreference.getUsername(context)
+        val getName = appGlobals.getValueString("userName")
         Log.d("UserName: ", getName.toString())
         println("DebuggingName: " + message[position].name.toString())
 
