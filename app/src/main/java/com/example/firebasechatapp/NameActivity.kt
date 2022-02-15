@@ -41,7 +41,7 @@ class NameActivity : AppCompatActivity() {
 
         supportActionBar?.hide()
         sharedPreferences = getSharedPreferences("nameKey", MODE_PRIVATE)
-        setUpNameSendButton()
+//        setUpNameSendButton()
 
         // Configure Google Sign In inside onCreate method
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -65,6 +65,7 @@ class NameActivity : AppCompatActivity() {
             val intentData : Intent? = result.data
             val task = GoogleSignIn.getSignedInAccountFromIntent(intentData)
             handleResult(task)
+            Log.e("Here", "result Launcher")
         }
     }
 
@@ -73,6 +74,9 @@ class NameActivity : AppCompatActivity() {
         val signInIntent:Intent=mGoogleSignInClient.signInIntent
 //        startActivityForResult(signInIntent,reqCode)
         resultLauncher.launch(signInIntent)
+
+        Log.e("Here", "sign in")
+
     }
 
     private fun handleResult(completedTask: Task<GoogleSignInAccount>){
@@ -89,6 +93,8 @@ class NameActivity : AppCompatActivity() {
     }
 
     private fun firebaseAuthWithGoogle(account: GoogleSignInAccount) {
+        Log.e("Here", "auth")
+
         val credential = GoogleAuthProvider.getCredential(account.idToken, null)
         firebaseAuth.signInWithCredential(credential)
             .addOnCompleteListener(this) {task ->
